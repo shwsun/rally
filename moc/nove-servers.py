@@ -43,9 +43,9 @@ LOG = logging.getLogger(__name__)
 @validation.add("required_platform", platform="openstack", admin=True,
                 users=True)
 @scenario.configure(context={"cleanup@openstack": ["nova", 'cinder']},
-                    name="NovaServers.stiched_complex_workload",
+                    name="NovaServers.stitched_complex_workload",
                     platform="openstack")
-class StichedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
+class StitchedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
     """Complex workload for benchmarking Pythia framework.
 
     The workload will:
@@ -57,7 +57,7 @@ class StichedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 
     def run(self, image, flavor, volume_size, volume_type=None, count=5,
             min_sleep=0, max_sleep=0, detailed=True, force_delete=False,
-            actions=None,            **kwargs): 
+            actions=None,            **kwargs):
         """Boot a server from volume and then delete it.
 
         task 1: BootAndDeleteMultipleServers
@@ -125,7 +125,7 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 
     def run(self, image, flavor, volume_size, volume_type=None, count=5,
             min_sleep=0, max_sleep=0, detailed=True, force_delete=False,
-            actions=None,            **kwargs): 
+            actions=None,            **kwargs):
         """Boot a server from volume and then delete it.
 
         task 1: BootAndDeleteMultipleServers

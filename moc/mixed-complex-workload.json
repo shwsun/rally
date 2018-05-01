@@ -1,0 +1,45 @@
+{% set flavor_name = flavor_name or "m1.tiny" %}
+{% set volume_type = volume_type or "" %}
+
+{
+  "NovaServers.mixed_complex_workload": [
+    {
+      "runner": {
+        "type": "constant",
+        "concurrency": 1,
+        "times": 1
+      },
+      "args": {
+        "count": 5,
+        "image": {
+          "name": "^cirros.*-disk$"
+        },
+        "flavor": {
+          "name": "{{flavor_name}}"
+        },
+        "volume_size": 10,
+        "volume_type": "{{volume_type}}",
+        "force_delete": false,
+        "actions": [
+                    {"hard_reboot": 1},
+                    {"soft_reboot": 1},
+                    {"stop_start": 1},
+                    {"rescue_unrescue": 1}
+        ]
+      },
+      "context": {
+        "users": {
+          "users_per_tenant": 1,
+          "tenants": 1
+        }
+      },
+      "sla": {
+         "failure_rate": {
+           "max": 0
+         }
+      }
+    }
+  ]
+}
+
+
