@@ -2,7 +2,7 @@
 {% set volume_type = volume_type or "" %}
 
 {
-  "NovaServers.mixed_complex_workload": [
+  "NovaServers.mixed_complex_workload_try: [
     {
       "runner": {
         "type": "constant",
@@ -19,8 +19,6 @@
         },
         "volume_size": 10,
         "volume_type": "{{volume_type}}",
-        "boot_server_kwargs": {},
-        "create_volume_kwargs": {},
         "force_delete": false,
         "actions": [
                     {"hard_reboot": 1},
