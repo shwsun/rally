@@ -104,10 +104,11 @@ class StitchedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 @validation.add("image_valid_on_flavor", flavor_param="flavor",
                 image_param="image", validate_disk=False)
 @validation.add("required_services", services=([consts.Service.NOVA,
+                                                consts.Service.GLANCE,
                                                 consts.Service.CINDER]))
 @validation.add("required_platform", platform="openstack", admin=True,
                 users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", 'cinder']},
+@scenario.configure(context={"cleanup@openstack": ["nova", 'cinder', 'glance']},
                     name="NovaServers.mixed_complex_workload",
                     platform="openstack")
 class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
