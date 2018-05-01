@@ -141,15 +141,19 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 
         self._list_servers(detailed)
 
-        for x in range(1, count):
+        for x in range(0, count):
             # create volume to boot server from
             volume = self.cinder.create_volume(volume_size, imageRef=image,
                                                volume_type=volume_type)
             volume_list.append(volume)
             block_device_mapping = {"vda": "%s:::1" % volume.id}
-            server = self._boot_server(None, flavor,
+            self.sleep_between(min_sleep, max_sleep)
+            # check
+            #server= self._boot_server(image, flavor, **kwargs)
+            server = self._boot_server(image, flavor,
                                        block_device_mapping=block_device_mapping,
                                        **kwargs)
+            self.sleep_between(min_sleep, max_sleep)
             server_list.append(server)
             # create a list of operations to execute
             action_builder = self._bind_actions()
@@ -167,7 +171,7 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
             # snapshotting
             snapshot = self._create_image(server)
             snapshot_list.append(snapshot)
-            server_new = self._boot_server(image.id, flavor, **kwargs)
+            server_new = self._boot_server(snapshot.id, flavor, **kwargs)
             snapshot_server_list.append(server_new)
             self.sleep_between(min_sleep, max_sleep)
             self._list_servers(detailed)
@@ -177,7 +181,7 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
             self._delete_server(server, force=force_delete)
 
         for snapshot in snapshot_list:
-            self._delete_image(snapshot, force=force_delete)
+            self._delete_image(snapshot)
 
         for snapshot_server in snapshot_server_list:
             self._delete_server(snapshot_server, force=force_delete)
