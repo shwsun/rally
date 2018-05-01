@@ -109,9 +109,9 @@ class StitchedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 @validation.add("required_platform", platform="openstack", admin=True,
                 users=True)
 @scenario.configure(context={"cleanup@openstack": ["nova", 'cinder', 'glance']},
-                    name="NovaServers.mixed_complex_workload",
+                    name="NovaServers.mixed_complex_workload_try",
                     platform="openstack")
-class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
+class MixedComplexWorkloadTry(utils.NovaScenario, cinder_utils.CinderBasic):
     """Mixed complex workload for benchmarking Pythia framework.
 
     This workload is derived from the StichedComplexWorkload. It will:
@@ -126,7 +126,7 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 
     def run(self, image, flavor, volume_size, volume_type=None, count=5,
             min_sleep=0, max_sleep=0, detailed=True, force_delete=False,
-            actions=None, **kwargs):
+            auto_assign_nic=False, actions=None, **kwargs):
         """Boot a server from volume and then delete it.
 
         task 1: BootAndDeleteMultipleServers
@@ -150,7 +150,8 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
             self.sleep_between(min_sleep, max_sleep)
             # check
             #server= self._boot_server(image, flavor, **kwargs)
-            server = self._boot_server(image, flavor,
+            server = self._boot_server(None, flavor,
+                                       auto_assign_nic=auto_assign_nic,
                                        block_device_mapping=block_device_mapping,
                                        **kwargs)
             self.sleep_between(min_sleep, max_sleep)
@@ -186,4 +187,90 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
         for snapshot_server in snapshot_server_list:
             self._delete_server(snapshot_server, force=force_delete)
 
+
+@types.convert(image={"type": "glance_image"},
+               flavor={"type": "nova_flavor"},
+               to_flavor={"type": "nova_flavor"})
+@validation.add("image_valid_on_flavor", flavor_param="flavor",
+                image_param="image", validate_disk=False)
+@validation.add("required_services", services=([consts.Service.NOVA,
+                                                consts.Service.GLANCE,
+                                                consts.Service.CINDER]))
+@validation.add("required_platform", platform="openstack", admin=True,
+                users=True)
+@scenario.configure(context={"cleanup@openstack": ["nova", 'cinder', 'glance']},
+                    name="NovaServers.mixed_complex_workload",
+                    platform="openstack")
+class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
+    """Mixed complex workload for benchmarking Pythia framework.
+
+    This workload is derived from the StichedComplexWorkload. It will:
+    1. boot a list of servers (# == count) from the volumes, execute operations
+    against them, and then take snapshots for all of them,
+
+    1. boot a list of servers (number == count),
+    2. creates a value and then boot a server from that volume,
+    3. boot a server and then run some specific commands against it
+
+    """
+
+    def run(self, image, flavor, to_flavor, volume_size, volume_type=None,
+            count=2, confirm=True, do_delete=True, boot_server_kwargs=None,
+            create_volume_kwargs=None, min_sleep=0, max_sleep=0, detailed=True,
+            force_delete=False, actions=None, **kwargs):
+        """Boot a server from volume and then delete it.
+
+        task 1: BootAndDeleteMultipleServers
+        task 2: BootServerFromVolumeAndDelete
+        task 3: BootAndBounceServer
+        task  SnapshotServer
+        """
+        server_list = []
+        volume_list = []
+        snapshot_list = []
+        snapshot_server_list = []
+
+        self._list_servers(detailed)
+
+        for x in range(0, count):
+            boot_server_kwargs = boot_server_kwargs or {}
+            create_volume_kwargs = create_volume_kwargs or {}
+
+            server = self._boot_server(image, flavor, **boot_server_kwargs)
+            volume = self.cinder.create_volume(volume_size,
+                                               **create_volume_kwargs)
+            self._attach_volume(server, volume)
+            volume_list.append(volume)
+            self.sleep_between(min_sleep, max_sleep)
+            server_list.append(server)
+            # create a list of operations to execute
+            action_builder = self._bind_actions()
+            actions = actions or []
+            try:
+                action_builder.validate(actions)
+            except jsonschema.exceptions.ValidationError as error:
+                raise rally_exceptions.InvalidConfigException(
+                    "Invalid server actions configuration \'%(actions)s\' due to: "
+                    "%(error)s" % {"actions": str(actions), "error": str(error)})
+            # exec operations against the server desired
+            for action in action_builder.build_actions(actions, server):
+                action()
+
+            # snapshotting
+            snapshot = self._create_image(server)
+            snapshot_list.append(snapshot)
+            server_new = self._boot_server(snapshot.id, flavor, **kwargs)
+            snapshot_server_list.append(server_new)
+            self.sleep_between(min_sleep, max_sleep)
+            self._list_servers(detailed)
+
+        # cleanup
+        for server in server_list:
+            self._delete_server(server, force=force_delete)
+
+        for snapshot in snapshot_list:
+            self._delete_image(snapshot)
+
+        for snapshot_server in snapshot_server_list:
+            self._delete_server(snapshot_server, force=force_delete)
 
