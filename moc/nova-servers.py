@@ -125,7 +125,7 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 
     def run(self, image, flavor, volume_size, volume_type=None, count=5,
             min_sleep=0, max_sleep=0, detailed=True, force_delete=False,
-            actions=None,            **kwargs):
+            actions=None, **kwargs):
         """Boot a server from volume and then delete it.
 
         task 1: BootAndDeleteMultipleServers
@@ -140,7 +140,7 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 
         self._list_servers(detailed)
 
-        for x in range(0, 4):
+        for x in range(1, count):
             # create volume to boot server from
             volume = self.cinder.create_volume(volume_size, imageRef=image,
                                                volume_type=volume_type)
@@ -180,8 +180,5 @@ class MixedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 
         for snapshot_server in snapshot_server_list:
             self._delete_server(snapshot_server, force=force_delete)
-
-
-
 
 
