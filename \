@@ -2,7 +2,7 @@
 {% set volume_type = volume_type or "" %}
 
 {
-  "NovaServers.mixed_complex_workload_try: [
+  "NovaServers.mixed_complex_workload_one: [
     {
       "runner": {
         "type": "constant",
