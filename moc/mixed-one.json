@@ -2,22 +2,22 @@
 {% set volume_type = volume_type or "" %}
 
 {
-  "NovaServers.mixed_complex_workload_one: [
+  "NovaServers.mixed_complex_workload_one": [
     {
       "runner": {
         "type": "constant",
-        "concurrency": 1,
-        "times": 1
+        "concurrency": 2,
+        "times": 2
       },
       "args": {
-        "count": 5,
+        "count": 2,
         "image": {
-          "name": "^cirros.*-disk$"
+          "name": "cirros-0.3.4-x86_64-uec"
         },
         "flavor": {
           "name": "{{flavor_name}}"
         },
-        "volume_size": 10,
+        "volume_size": 5,
         "volume_type": "{{volume_type}}",
         "force_delete": false,
         "actions": [
@@ -41,5 +41,3 @@
     }
   ]
 }
-
-
