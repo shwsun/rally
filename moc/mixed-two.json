@@ -2,7 +2,7 @@
 {% set volume_type = volume_type or "" %}
 
 {
-  "NovaServers.mixed_complex_workload": [
+  "NovaServers.mixed_complex_workload_two": [
     {
       "runner": {
         "type": "constant",
@@ -16,6 +16,9 @@
         },
         "flavor": {
           "name": "{{flavor_name}}"
+        },
+        "to_flavor": {
+          "name": "m1.small"
         },
         "volume_size": 10,
         "volume_type": "{{volume_type}}",

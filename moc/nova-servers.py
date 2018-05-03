@@ -297,19 +297,20 @@ class MixedComplexWorkloadOneBackup(utils.NovaScenario, cinder_utils.CinderBasic
 class MixedComplexWorkloadTwo(utils.NovaScenario, cinder_utils.CinderBasic):
     """Mixed complex workload for benchmarking Pythia framework.
 
-    This workload is derived from the StichedComplexWorkload. It will:
-    1. boot a list of servers (# == count) from the volumes, execute operations
-    against them, and then take snapshots for all of them,
+    This workload will:
+    1. boot a VM,
+    2. run operations against the VM
+    3. resize the vm
+    4. re-run the pervious operations,
+    5. snapshot the vm into a image
+    6. boot another vm from the image
 
-    1. boot a list of servers (number == count),
-    2. creates a value and then boot a server from that volume,
-    3. boot a server and then run some specific commands against it
 
     """
 
     def run(self, image, flavor, to_flavor, volume_size, volume_type=None,
-            count=2, confirm=True, do_delete=True, boot_server_kwargs=None,
-            create_volume_kwargs=None, min_sleep=0, max_sleep=0, detailed=True,
+            count=2, confirm=True, do_delete=True, min_sleep=0, max_sleep=0,
+            detailed=True, 
             force_delete=False, actions=None, **kwargs):
         """Boot a server from volume and then delete it.
 
@@ -317,25 +318,24 @@ class MixedComplexWorkloadTwo(utils.NovaScenario, cinder_utils.CinderBasic):
         task 2: BootServerFromVolumeAndDelete
         task 3: BootAndBounceServer
         task  SnapshotServer
+        ResizeServer
+
+        NEXT:
+        BootServerAttachCreatedVolumeAndResize
+        BootServerAttachVolumeAndListAttachments
+        BootAndRebuildServer
         """
         server_list = []
-        volume_list = []
         snapshot_list = []
         snapshot_server_list = []
 
         self._list_servers(detailed)
 
         for x in range(0, count):
-            boot_server_kwargs = boot_server_kwargs or {}
-            create_volume_kwargs = create_volume_kwargs or {}
-
-            server = self._boot_server(image, flavor, **boot_server_kwargs)
-            volume = self.cinder.create_volume(volume_size,
-                                               **create_volume_kwargs)
-            self._attach_volume(server, volume)
-            volume_list.append(volume)
+            server = self._boot_server(image, flavor, **kwargs)
             self.sleep_between(min_sleep, max_sleep)
             server_list.append(server)
+
             # create a list of operations to execute
             action_builder = self._bind_actions()
             actions = actions or []
@@ -349,11 +349,24 @@ class MixedComplexWorkloadTwo(utils.NovaScenario, cinder_utils.CinderBasic):
             for action in action_builder.build_actions(actions, server):
                 action()
 
+            # Try to resize it
+            self._resize(server, to_flavor)
+            # by default we confirm
+            confirm = kwargs.get("confirm", True)
+            if confirm:
+                self._resize_confirm(server)
+            else:
+                self._resize_revert(server)
+
+            # re-run the operations
+            for action in action_builder.build_actions(actions, server):
+                action()
+
             # snapshotting
             snapshot = self._create_image(server)
             snapshot_list.append(snapshot)
-            server_new = self._boot_server(snapshot.id, flavor, **kwargs)
-            snapshot_server_list.append(server_new)
+            #server_new = self._boot_server(snapshot.id, flavor, **kwargs)
+            #snapshot_server_list.append(server_new)
             self.sleep_between(min_sleep, max_sleep)
             self._list_servers(detailed)
 
@@ -364,6 +377,5 @@ class MixedComplexWorkloadTwo(utils.NovaScenario, cinder_utils.CinderBasic):
         for snapshot in snapshot_list:
             self._delete_image(snapshot)
 
-        for snapshot_server in snapshot_server_list:
-            self._delete_server(snapshot_server, force=force_delete)
-
+        #for snapshot_server in snapshot_server_list:
+        #    self._delete_server(snapshot_server, force=force_delete)
