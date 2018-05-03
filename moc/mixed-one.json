@@ -19,7 +19,7 @@
         },
         "volume_size": 5,
         "volume_type": "{{volume_type}}",
-        "force_delete": false,
+        "force_delete": true,
         "actions": [
                     {"hard_reboot": 1},
                     {"soft_reboot": 1},

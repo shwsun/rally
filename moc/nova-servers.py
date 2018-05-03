@@ -135,7 +135,7 @@ class MixedComplexWorkloadOne(utils.NovaScenario, cinder_utils.CinderBasic):
         task 4: SnapshotServer
         """
         server_list = []
-        volume_list = []
+        #volume_list = []
         snapshot_list = []
         snapshot_server_list = []
 
