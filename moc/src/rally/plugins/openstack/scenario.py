@@ -31,6 +31,23 @@ configure = functools.partial(scenario.configure, platform="openstack")
 CONF = cfg.CONF
 
 
+# -------------------------------------------------
+# NOTE(jethro): Sampling functiobn.
+# -------------------------------------------------
+import random
+import subprocess
+
+
+def is_sampled(rate):
+    MAX_RANGE = 100
+    if random.randint(0, 100) < MAX_RANGE * rate:
+        return True
+    return False
+
+
+SAMPLING_RATE = 0.2  #  20% sampling rate
+
+
 @context.add_default_context("users@openstack", {})
 @plugin.default_meta(inherit=False)
 class OpenStackScenario(scenario.Scenario):
@@ -135,10 +152,13 @@ class OpenStackScenario(scenario.Scenario):
                 if cred.profiler_hmac_key is not None:
                     profiler_hmac_key = cred.profiler_hmac_key
                     profiler_conn_str = cred.profiler_conn_str
+            # NOTE(jethro): changes to add the sampling decision
             if profiler_hmac_key is None:
-                profiler_hmac_key = "Devstack1"
-                pass
-                #return
+                if is_sampled(SAMPLING_RATE) is True:
+                    profiler_hmac_key = "Devstack1"
+                    pass
+                else:
+                    return
             profiler.init(profiler_hmac_key)
             trace_id = profiler.get().get_base_id()
             complete_data = {"title": "OSProfiler Trace-ID",
