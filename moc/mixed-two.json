@@ -1,5 +1,6 @@
-{% set flavor_name = flavor_name or "m1.tiny" %}
 {% set volume_type = volume_type or "" %}
+{% set flavor_name = flavor_name or "m1.tiny" %}
+{% set image_name = image_name or "cirros-0.3.4-x86_64-uec" or "^cirros.*-disk$" %}
 
 {
   "NovaServers.mixed_complex_workload_two": [
@@ -12,7 +13,7 @@
       "args": {
         "count": 5,
         "image": {
-          "name": "^cirros.*-disk$"
+          "name": "{{image_name}}"
         },
         "flavor": {
           "name": "{{flavor_name}}"
