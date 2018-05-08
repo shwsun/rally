@@ -11,7 +11,7 @@
         "times": 1
       },
       "args": {
-        "count": 5,
+        "count": 1,
         "image": {
           "name": "{{image_name}}"
         },
@@ -36,7 +36,7 @@
       "context": {
         "users": {
           "users_per_tenant": 1,
-          "tenants": 1
+          "tenants": 30
         }
       },
       "sla": {
