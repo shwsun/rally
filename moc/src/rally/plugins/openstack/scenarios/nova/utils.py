@@ -45,14 +45,14 @@ def is_sampled(rate):
 SAMPLING_RATE = 1  # 20% sampling rate
 
 
-
-
 class NovaScenario(scenario.OpenStackScenario):
     """Base class for Nova scenarios with basic atomic actions."""
 
     @atomic.action_timer("nova.list_servers")
     def _list_servers(self, detailed=True):
         """Returns user servers list."""
+        LOG.warning("TRACE: _list_servers")
+        self._init_profiler(self.context)
         return self.clients("nova").servers.list(detailed)
 
     def _pick_random_nic(self):
@@ -725,7 +725,7 @@ class NovaScenario(scenario.OpenStackScenario):
     def _resize(self, server, flavor):
         LOG.warning("TRACE: _resize")
         self._init_profiler(self.context)
-        
+
         server.resize(flavor)
         utils.wait_for_status(
             server,
@@ -1106,6 +1106,9 @@ class NovaScenario(scenario.OpenStackScenario):
 
     @atomic.action_timer("nova.bind_actions")
     def _bind_actions(self):
+        LOG.warning("TRACE: _bind_actions")
+        self._init_profiler(self.context)
+
         actions = ["hard_reboot", "soft_reboot", "stop_start",
                    "rescue_unrescue", "pause_unpause", "suspend_resume",
                    "lock_unlock", "shelve_unshelve"]
@@ -1282,8 +1285,6 @@ class NovaScenario(scenario.OpenStackScenario):
                                                              port_id, net_id,
                                                              fixed_ip)
 
-
-
     def _init_profiler(self, context):
         """Inits the profiler."""
         LOG.warning("TRACE: _init_profiler")
@@ -1312,7 +1313,8 @@ class NovaScenario(scenario.OpenStackScenario):
                     return
             profiler.init(profiler_hmac_key)
             trace_id = profiler.get().get_base_id()
-            LOG.warning("TRACE: ID %s", trace_id) 
+            LOG.warning("TRACE: ID %s" % (trace_id))
+            LOG.info("TRACE: ID %s" % (trace_id))
             complete_data = {"title": "OSProfiler Trace-ID",
                              "chart_plugin": "OSProfiler",
                              "data": {"trace_id": [trace_id],
