@@ -26,6 +26,7 @@ from rally.task import utils
 CONF = cfg.CONF
 LOG = logging.getLogger(__file__)
 
+
 # -------------------------------------------------
 # NOTE(jethro): Sampling functiobn.
 # -------------------------------------------------
@@ -41,41 +42,9 @@ def is_sampled(rate):
     return False
 
 
-SAMPLING_RATE = 0.2  # 20% sampling rate
+SAMPLING_RATE = 1  # 20% sampling rate
 
 
-def _init_profiler(self, context):
-    """Inits the profiler."""
-    if not CONF.openstack.enable_profiler:
-        return
-    if context is not None:
-        cred = None
-        profiler_hmac_key = None
-        profiler_conn_str = None
-        if context.get("admin"):
-            cred = context["admin"]["credential"]
-            if cred.profiler_hmac_key is not None:
-                profiler_hmac_key = cred.profiler_hmac_key
-                profiler_conn_str = cred.profiler_conn_str
-        if context.get("user"):
-            cred = context["user"]["credential"]
-            if cred.profiler_hmac_key is not None:
-                profiler_hmac_key = cred.profiler_hmac_key
-                profiler_conn_str = cred.profiler_conn_str
-        # NOTE(jethro): changes to add the sampling decision
-        if profiler_hmac_key is None:
-            if is_sampled(SAMPLING_RATE) is True:
-                profiler_hmac_key = "Devstack1"
-                pass
-            else:
-                return
-        profiler.init(profiler_hmac_key)
-        trace_id = profiler.get().get_base_id()
-        complete_data = {"title": "OSProfiler Trace-ID",
-                         "chart_plugin": "OSProfiler",
-                         "data": {"trace_id": [trace_id],
-                                  "conn_str": profiler_conn_str}}
-        self.add_output(complete=complete_data)
 
 
 class NovaScenario(scenario.OpenStackScenario):
@@ -112,6 +81,8 @@ class NovaScenario(scenario.OpenStackScenario):
         :param kwargs: other optional parameters to initialize the server
         :returns: nova Server instance
         """
+        LOG.warning("TRACE: _boot_server")
+        self._init_profiler(self.context)
         server_name = self.generate_random_name()
         secgroup = self.context.get("user", {}).get("secgroup")
         if secgroup:
@@ -421,6 +392,8 @@ class NovaScenario(scenario.OpenStackScenario):
         :param server: Server object
         :param force: If True, force_delete will be used instead of delete.
         """
+        LOG.warning("TRACE: _delete_server")
+        self._init_profiler(self.context)
         atomic_name = ("nova.%sdelete_server") % (force and "force_" or "")
         with atomic.ActionTimer(self, atomic_name):
             if force:
@@ -557,6 +530,7 @@ class NovaScenario(scenario.OpenStackScenario):
                 timeout=CONF.openstack.nova_server_image_create_timeout,
                 check_interval=check_interval
             )
+        self._init_profiler(self.context)
         return image
 
     @atomic.action_timer("nova.list_images")
@@ -749,6 +723,9 @@ class NovaScenario(scenario.OpenStackScenario):
 
     @atomic.action_timer("nova.resize")
     def _resize(self, server, flavor):
+        LOG.warning("TRACE: _resize")
+        self._init_profiler(self.context)
+        
         server.resize(flavor)
         utils.wait_for_status(
             server,
@@ -1304,3 +1281,40 @@ class NovaScenario(scenario.OpenStackScenario):
         return self.clients("nova").servers.interface_attach(server,
                                                              port_id, net_id,
                                                              fixed_ip)
+
+
+
+    def _init_profiler(self, context):
+        """Inits the profiler."""
+        LOG.warning("TRACE: _init_profiler")
+        if not CONF.openstack.enable_profiler:
+            return
+        if context is not None:
+            cred = None
+            profiler_hmac_key = None
+            profiler_conn_str = None
+            if context.get("admin"):
+                cred = context["admin"]["credential"]
+                if cred.profiler_hmac_key is not None:
+                    profiler_hmac_key = cred.profiler_hmac_key
+                    profiler_conn_str = cred.profiler_conn_str
+            if context.get("user"):
+                cred = context["user"]["credential"]
+                if cred.profiler_hmac_key is not None:
+                    profiler_hmac_key = cred.profiler_hmac_key
+                    profiler_conn_str = cred.profiler_conn_str
+            # NOTE(jethro): changes to add the sampling decision
+            if profiler_hmac_key is None:
+                if is_sampled(SAMPLING_RATE) is True:
+                    profiler_hmac_key = "Devstack1"
+                    pass
+                else:
+                    return
+            profiler.init(profiler_hmac_key)
+            trace_id = profiler.get().get_base_id()
+            LOG.warning("TRACE: ID %s", trace_id) 
+            complete_data = {"title": "OSProfiler Trace-ID",
+                             "chart_plugin": "OSProfiler",
+                             "data": {"trace_id": [trace_id],
+                                      "conn_str": profiler_conn_str}}
+            self.add_output(complete=complete_data)

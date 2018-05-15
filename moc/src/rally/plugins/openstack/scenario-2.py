@@ -45,7 +45,7 @@ def is_sampled(rate):
     return False
 
 
-SAMPLING_RATE = 0.2  #  20% sampling rate
+SAMPLING_RATE = 0.2  # 20% sampling rate
 
 
 @context.add_default_context("users@openstack", {})
