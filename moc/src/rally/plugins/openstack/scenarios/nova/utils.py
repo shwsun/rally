@@ -1287,7 +1287,7 @@ class NovaScenario(scenario.OpenStackScenario):
 
     def _init_profiler(self, context):
         """Inits the profiler."""
-        LOG.warning("DEBUG: _init_profiler")
+        LOG.warning("DEBUG: _init_profiler entry point")
         if not CONF.openstack.enable_profiler:
             return
         if context is not None:
@@ -1307,6 +1307,7 @@ class NovaScenario(scenario.OpenStackScenario):
             # NOTE(jethro): changes to add the sampling decision
             if profiler_hmac_key is None:
                 if is_sampled(SAMPLING_RATE) is True:
+                    LOG.warning("DEBUG: sampled to enable tracing")
                     profiler_hmac_key = "Devstack1"
                     pass
                 else:
