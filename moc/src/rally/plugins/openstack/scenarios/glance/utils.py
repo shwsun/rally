@@ -104,7 +104,7 @@ class GlanceScenario(scenario.OpenStackScenario):
 
     def _init_profiler(self, context):
         """Inits the profiler."""
-        LOG.warning("TRACE: _init_profiler")
+        LOG.warning("DEBUG: _init_profiler")
         if not CONF.openstack.enable_profiler:
             return
         if context is not None:
@@ -130,7 +130,7 @@ class GlanceScenario(scenario.OpenStackScenario):
                     return
             profiler.init(profiler_hmac_key)
             trace_id = profiler.get().get_base_id()
-            LOG.warning("TRACE: ID %s" % (trace_id))
+            print("TRACE: ID %s") % trace_id
             LOG.info("TRACE: ID %s" % (trace_id))
             complete_data = {"title": "OSProfiler Trace-ID",
                              "chart_plugin": "OSProfiler",
