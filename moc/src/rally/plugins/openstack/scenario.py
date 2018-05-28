@@ -30,7 +30,6 @@ configure = functools.partial(scenario.configure, platform="openstack")
 
 CONF = cfg.CONF
 
-
 # -------------------------------------------------
 # NOTE(jethro): Sampling functiobn.
 # -------------------------------------------------
@@ -62,8 +61,9 @@ class OpenStackScenario(scenario.Scenario):
                 for service in api_versions:
                     api_info[service] = {
                         "version": api_versions[service].get("version"),
-                        "service_type": api_versions[service].get(
-                            "service_type")}
+                        "service_type":
+                        api_versions[service].get("service_type")
+                    }
 
             if admin_clients is None and "admin" in context:
                 self._admin_clients = osclients.Clients(
@@ -161,8 +161,12 @@ class OpenStackScenario(scenario.Scenario):
                     return
             profiler.init(profiler_hmac_key)
             trace_id = profiler.get().get_base_id()
-            complete_data = {"title": "OSProfiler Trace-ID",
-                             "chart_plugin": "OSProfiler",
-                             "data": {"trace_id": [trace_id],
-                                      "conn_str": profiler_conn_str}}
+            complete_data = {
+                "title": "OSProfiler Trace-ID",
+                "chart_plugin": "OSProfiler",
+                "data": {
+                    "trace_id": [trace_id],
+                    "conn_str": profiler_conn_str
+                }
+            }
             self.add_output(complete=complete_data)
