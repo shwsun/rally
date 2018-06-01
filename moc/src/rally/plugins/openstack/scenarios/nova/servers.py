@@ -1359,33 +1359,21 @@ class MixedComplexWorkloadOne(utils.NovaScenario, cinder_utils.CinderBasic):
 class MixedComplexWorkloadCur(utils.NovaScenario, cinder_utils.CinderBasic):
     """Mixed complex workload for benchmarking Pythia framework.
 
-    This workload will:
-    1. boot a VM,
-    2. run operations against the VM
-    3. resize the vm
-    4. re-run the pervious operations,
-    5. snapshot the vm into a image
-    6. boot another vm from the image
+    WORKING EXAMPLE TWO
 
-
+    This workload will run the set of operations a number of times where a set
+    of operations consists of:
+    1. booting a VM,
+    2. running actions operation against the VM
+    3. resizing the vm
+    4. re-running the pervious operations,
+    5. snapshotting the vm into a image
     """
 
     def run(self, image, flavor, to_flavor, volume_size, volume_type=None,
             count=2, confirm=True, do_delete=True, min_sleep=0, max_sleep=0,
-            detailed=True, 
-            force_delete=False, actions=None, **kwargs):
-        """Boot a server from volume and then delete it.
-
-        task 1: BootAndDeleteMultipleServers
-        task 2: BootServerFromVolumeAndDelete
-        task 3: BootAndBounceServer
-        task  SnapshotServer
-        ResizeServer
-
-        NEXT:
-        BootServerAttachCreatedVolumeAndResize
-        BootServerAttachVolumeAndListAttachments
-        BootAndRebuildServer
+            detailed=True, force_delete=False, actions=None, **kwargs):
+        """Executing sets of operations against the Openstack environment.
         """
         self._list_servers(detailed)
 
@@ -1412,6 +1400,7 @@ class MixedComplexWorkloadCur(utils.NovaScenario, cinder_utils.CinderBasic):
                 action()
 
             # Try to resize it
+            self.sleep_between(min_sleep, max_sleep)
             self._resize(server, to_flavor)
             # by default we confirm
             confirm = kwargs.get("confirm", True)
