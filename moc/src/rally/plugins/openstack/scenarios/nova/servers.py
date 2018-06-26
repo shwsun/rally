@@ -26,25 +26,21 @@ from rally.plugins.openstack.scenarios.nova import utils
 from rally.plugins.openstack.wrappers import network as network_wrapper
 from rally.task import types
 from rally.task import validation
-
-
 """Complex Nova Scenarios for benchmarking Pythia."""
-
 
 LOG = logging.getLogger(__name__)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=(consts.Service.NOVA))
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_list_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_list_server",
+    platform="openstack")
 class BootAndListServer(utils.NovaScenario):
-
     def run(self, image, flavor, detailed=True, **kwargs):
         """Boot a server from an image and then list all servers.
 
@@ -77,7 +73,6 @@ class BootAndListServer(utils.NovaScenario):
 @validation.add("required_platform", platform="openstack", users=True)
 @scenario.configure(name="NovaServers.list_servers", platform="openstack")
 class ListServers(utils.NovaScenario):
-
     def run(self, detailed=True):
         """List all servers.
 
@@ -90,19 +85,23 @@ class ListServers(utils.NovaScenario):
         self._list_servers(detailed)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_delete_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_delete_server",
+    platform="openstack")
 class BootAndDeleteServer(utils.NovaScenario):
-
-    def run(self, image, flavor, min_sleep=0, max_sleep=0,
-            force_delete=False, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            min_sleep=0,
+            max_sleep=0,
+            force_delete=False,
+            **kwargs):
         """Boot and delete a server.
 
         Optional 'min_sleep' and 'max_sleep' parameters allow the scenario
@@ -121,20 +120,25 @@ class BootAndDeleteServer(utils.NovaScenario):
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
-@validation.add("required_platform", platform="openstack",
-                admin=True, users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_delete_multiple_servers",
-                    platform="openstack")
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_delete_multiple_servers",
+    platform="openstack")
 class BootAndDeleteMultipleServers(utils.NovaScenario):
-
-    def run(self, image, flavor, count=2, min_sleep=0,
-            max_sleep=0, force_delete=False, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            count=2,
+            min_sleep=0,
+            max_sleep=0,
+            force_delete=False,
+            **kwargs):
         """Boot multiple servers in a single request and delete them.
 
         Deletion is done in parallel with one request per server, not
@@ -148,27 +152,36 @@ class BootAndDeleteMultipleServers(utils.NovaScenario):
         :param force_delete: True if force_delete should be used
         :param kwargs: Optional additional arguments for instance creation
         """
-        servers = self._boot_servers(image, flavor, 1, instances_amount=count,
-                                     **kwargs)
+        servers = self._boot_servers(
+            image, flavor, 1, instances_amount=count, **kwargs)
         self.sleep_between(min_sleep, max_sleep)
         self._delete_servers(servers, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image", validate_disk=False)
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.CINDER])
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor",
+    flavor_param="flavor",
+    image_param="image",
+    validate_disk=False)
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", "cinder"]},
-                    name="NovaServers.boot_server_from_volume_and_delete",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", "cinder"]},
+    name="NovaServers.boot_server_from_volume_and_delete",
+    platform="openstack")
 class BootServerFromVolumeAndDelete(utils.NovaScenario,
                                     cinder_utils.CinderBasic):
-
-    def run(self, image, flavor, volume_size, volume_type=None,
-            min_sleep=0, max_sleep=0, force_delete=False, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            volume_size,
+            volume_type=None,
+            min_sleep=0,
+            max_sleep=0,
+            force_delete=False,
+            **kwargs):
         """Boot a server from volume and then delete it.
 
         The scenario first creates a volume and then a server.
@@ -186,27 +199,25 @@ class BootServerFromVolumeAndDelete(utils.NovaScenario,
         :param force_delete: True if force_delete should be used
         :param kwargs: Optional additional arguments for server creation
         """
-        volume = self.cinder.create_volume(volume_size, imageRef=image,
-                                           volume_type=volume_type)
+        volume = self.cinder.create_volume(
+            volume_size, imageRef=image, volume_type=volume_type)
         block_device_mapping = {"vda": "%s:::1" % volume.id}
-        server = self._boot_server(None, flavor,
-                                   block_device_mapping=block_device_mapping,
-                                   **kwargs)
+        server = self._boot_server(
+            None, flavor, block_device_mapping=block_device_mapping, **kwargs)
         self.sleep_between(min_sleep, max_sleep)
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_bounce_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_bounce_server",
+    platform="openstack")
 class BootAndBounceServer(utils.NovaScenario):
-
     def run(self, image, flavor, force_delete=False, actions=None, **kwargs):
         """Boot a server and run specified actions against it.
 
@@ -231,26 +242,33 @@ class BootAndBounceServer(utils.NovaScenario):
         except jsonschema.exceptions.ValidationError as error:
             raise rally_exceptions.InvalidConfigException(
                 "Invalid server actions configuration \'%(actions)s\' due to: "
-                "%(error)s" % {"actions": str(actions), "error": str(error)})
+                "%(error)s" % {
+                    "actions": str(actions),
+                    "error": str(error)
+                })
         server = self._boot_server(image, flavor, **kwargs)
         for action in action_builder.build_actions(actions, server):
             action()
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_lock_unlock_and_delete",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_lock_unlock_and_delete",
+    platform="openstack")
 class BootLockUnlockAndDelete(utils.NovaScenario):
-
-    def run(self, image, flavor, min_sleep=0,
-            max_sleep=0, force_delete=False, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            min_sleep=0,
+            max_sleep=0,
+            force_delete=False,
+            **kwargs):
         """Boot a server, lock it, then unlock and delete it.
 
         Optional 'min_sleep' and 'max_sleep' parameters allow the
@@ -273,18 +291,17 @@ class BootLockUnlockAndDelete(utils.NovaScenario):
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.GLANCE])
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.GLANCE])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", "glance"]},
-                    name="NovaServers.snapshot_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", "glance"]},
+    name="NovaServers.snapshot_server",
+    platform="openstack")
 class SnapshotServer(utils.NovaScenario):
-
     def run(self, image, flavor, force_delete=False, **kwargs):
         """Boot a server, make its snapshot and delete both.
 
@@ -303,17 +320,16 @@ class SnapshotServer(utils.NovaScenario):
         self._delete_image(image)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_server",
+    platform="openstack")
 class BootServer(utils.NovaScenario):
-
     def run(self, image, flavor, auto_assign_nic=False, **kwargs):
         """Boot a server.
 
@@ -324,24 +340,31 @@ class BootServer(utils.NovaScenario):
         :param auto_assign_nic: True if NICs should be assigned
         :param kwargs: Optional additional arguments for server creation
         """
-        self._boot_server(image, flavor,
-                          auto_assign_nic=auto_assign_nic, **kwargs)
+        self._boot_server(
+            image, flavor, auto_assign_nic=auto_assign_nic, **kwargs)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image", validate_disk=False)
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.CINDER])
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor",
+    flavor_param="flavor",
+    image_param="image",
+    validate_disk=False)
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", "cinder"]},
-                    name="NovaServers.boot_server_from_volume",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", "cinder"]},
+    name="NovaServers.boot_server_from_volume",
+    platform="openstack")
 class BootServerFromVolume(utils.NovaScenario, cinder_utils.CinderBasic):
-
-    def run(self, image, flavor, volume_size,
-            volume_type=None, auto_assign_nic=False, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            volume_size,
+            volume_type=None,
+            auto_assign_nic=False,
+            **kwargs):
         """Boot a server from volume.
 
         The scenario first creates a volume and then a server.
@@ -355,25 +378,30 @@ class BootServerFromVolume(utils.NovaScenario, cinder_utils.CinderBasic):
         :param auto_assign_nic: True if NICs should be assigned
         :param kwargs: Optional additional arguments for server creation
         """
-        volume = self.cinder.create_volume(volume_size, imageRef=image,
-                                           volume_type=volume_type)
+        volume = self.cinder.create_volume(
+            volume_size, imageRef=image, volume_type=volume_type)
         block_device_mapping = {"vda": "%s:::1" % volume.id}
-        self._boot_server(None, flavor, auto_assign_nic=auto_assign_nic,
-                          block_device_mapping=block_device_mapping,
-                          **kwargs)
+        self._boot_server(
+            None,
+            flavor,
+            auto_assign_nic=auto_assign_nic,
+            block_device_mapping=block_device_mapping,
+            **kwargs)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"},
-               to_flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(
+    image={"type": "glance_image"},
+    flavor={"type": "nova_flavor"},
+    to_flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=(consts.Service.NOVA))
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.resize_server", platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.resize_server",
+    platform="openstack")
 class ResizeServer(utils.NovaScenario):
-
     def run(self, image, flavor, to_flavor, force_delete=False, **kwargs):
         """Boot a server, then resize and delete it.
 
@@ -397,20 +425,26 @@ class ResizeServer(utils.NovaScenario):
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"},
-               to_flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(
+    image={"type": "glance_image"},
+    flavor={"type": "nova_flavor"},
+    to_flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.resize_shutoff_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.resize_shutoff_server",
+    platform="openstack")
 class ResizeShutoffServer(utils.NovaScenario):
-
-    def run(self, image, flavor, to_flavor, confirm=True,
-            force_delete=False, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            to_flavor,
+            confirm=True,
+            force_delete=False,
+            **kwargs):
         """Boot a server and stop it, then resize and delete it.
 
         This test will confirm the resize by default,
@@ -434,13 +468,14 @@ class ResizeShutoffServer(utils.NovaScenario):
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"},
-               to_flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.CINDER])
+@types.convert(
+    image={"type": "glance_image"},
+    flavor={"type": "nova_flavor"},
+    to_flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
 @scenario.configure(
     context={"cleanup@openstack": ["cinder", "nova"]},
@@ -448,10 +483,18 @@ class ResizeShutoffServer(utils.NovaScenario):
     platform="openstack")
 class BootServerAttachCreatedVolumeAndResize(utils.NovaScenario,
                                              cinder_utils.CinderBasic):
-
-    def run(self, image, flavor, to_flavor, volume_size, min_sleep=0,
-            max_sleep=0, force_delete=False, confirm=True, do_delete=True,
-            boot_server_kwargs=None, create_volume_kwargs=None):
+    def run(self,
+            image,
+            flavor,
+            to_flavor,
+            volume_size,
+            min_sleep=0,
+            max_sleep=0,
+            force_delete=False,
+            confirm=True,
+            do_delete=True,
+            boot_server_kwargs=None,
+            create_volume_kwargs=None):
         """Create a VM from image, attach a volume to it and resize.
 
         Simple test to create a VM and attach a volume, then resize the VM,
@@ -493,16 +536,17 @@ class BootServerAttachCreatedVolumeAndResize(utils.NovaScenario,
             self._delete_server(server, force=force_delete)
 
 
-@validation.add("number", param_name="volume_num", minval=1,
-                integer_only=True)
-@validation.add("number", param_name="volume_size", minval=1,
-                integer_only=True)
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image", validate_disk=False)
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.CINDER])
+@validation.add("number", param_name="volume_num", minval=1, integer_only=True)
+@validation.add(
+    "number", param_name="volume_size", minval=1, integer_only=True)
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor",
+    flavor_param="flavor",
+    image_param="image",
+    validate_disk=False)
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
 @scenario.configure(
     context={"cleanup@openstack": ["cinder", "nova"]},
@@ -510,9 +554,13 @@ class BootServerAttachCreatedVolumeAndResize(utils.NovaScenario,
     platform="openstack")
 class BootServerAttachVolumeAndListAttachments(utils.NovaScenario,
                                                cinder_utils.CinderBasic):
-
-    def run(self, image, flavor, volume_size=1, volume_num=2,
-            boot_server_kwargs=None, create_volume_kwargs=None):
+    def run(self,
+            image,
+            flavor,
+            volume_size=1,
+            volume_num=2,
+            boot_server_kwargs=None,
+            create_volume_kwargs=None):
         """Create a VM, attach N volume to it and list server's attachemnt.
 
         Measure the "nova volume-attachments" command performance.
@@ -543,23 +591,36 @@ class BootServerAttachVolumeAndListAttachments(utils.NovaScenario,
             self.assertIn(attachment, list_attachments, err_msg=msg)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"},
-               to_flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image", validate_disk=False)
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.CINDER])
+@types.convert(
+    image={"type": "glance_image"},
+    flavor={"type": "nova_flavor"},
+    to_flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor",
+    flavor_param="flavor",
+    image_param="image",
+    validate_disk=False)
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", "cinder"]},
-                    name="NovaServers.boot_server_from_volume_and_resize",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", "cinder"]},
+    name="NovaServers.boot_server_from_volume_and_resize",
+    platform="openstack")
 class BootServerFromVolumeAndResize(utils.NovaScenario,
                                     cinder_utils.CinderBasic):
-
-    def run(self, image, flavor, to_flavor, volume_size, min_sleep=0,
-            max_sleep=0, force_delete=False, confirm=True, do_delete=True,
-            boot_server_kwargs=None, create_volume_kwargs=None):
+    def run(self,
+            image,
+            flavor,
+            to_flavor,
+            volume_size,
+            min_sleep=0,
+            max_sleep=0,
+            force_delete=False,
+            confirm=True,
+            do_delete=True,
+            boot_server_kwargs=None,
+            create_volume_kwargs=None):
         """Boot a server from volume, then resize and delete it.
 
         The scenario first creates a volume and then a server.
@@ -589,10 +650,11 @@ class BootServerFromVolumeAndResize(utils.NovaScenario,
         if boot_server_kwargs.get("block_device_mapping"):
             LOG.warning("Using already existing volume is not permitted.")
 
-        volume = self.cinder.create_volume(volume_size, imageRef=image,
-                                           **create_volume_kwargs)
+        volume = self.cinder.create_volume(
+            volume_size, imageRef=image, **create_volume_kwargs)
         boot_server_kwargs["block_device_mapping"] = {
-            "vda": "%s:::1" % volume.id}
+            "vda": "%s:::1" % volume.id
+        }
 
         server = self._boot_server(None, flavor, **boot_server_kwargs)
         self.sleep_between(min_sleep, max_sleep)
@@ -607,17 +669,16 @@ class BootServerFromVolumeAndResize(utils.NovaScenario,
             self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.suspend_and_resume_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.suspend_and_resume_server",
+    platform="openstack")
 class SuspendAndResumeServer(utils.NovaScenario):
-
     def run(self, image, flavor, force_delete=False, **kwargs):
         """Create a server, suspend, resume and then delete it
 
@@ -632,17 +693,16 @@ class SuspendAndResumeServer(utils.NovaScenario):
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.pause_and_unpause_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.pause_and_unpause_server",
+    platform="openstack")
 class PauseAndUnpauseServer(utils.NovaScenario):
-
     def run(self, image, flavor, force_delete=False, **kwargs):
         """Create a server, pause, unpause and then delete it
 
@@ -657,17 +717,16 @@ class PauseAndUnpauseServer(utils.NovaScenario):
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.shelve_and_unshelve_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.shelve_and_unshelve_server",
+    platform="openstack")
 class ShelveAndUnshelveServer(utils.NovaScenario):
-
     def run(self, image, flavor, force_delete=False, **kwargs):
         """Create a server, shelve, unshelve and then delete it
 
@@ -682,20 +741,25 @@ class ShelveAndUnshelveServer(utils.NovaScenario):
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
-@validation.add("required_platform", platform="openstack",
-                admin=True, users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_live_migrate_server",
-                    platform="openstack")
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_live_migrate_server",
+    platform="openstack")
 class BootAndLiveMigrateServer(utils.NovaScenario):
-
-    def run(self, image, flavor, block_migration=False, disk_over_commit=False,
-            min_sleep=0, max_sleep=0, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            block_migration=False,
+            disk_over_commit=False,
+            min_sleep=0,
+            max_sleep=0,
+            **kwargs):
         """Live Migrate a server.
 
         This scenario launches a VM on a compute node available in
@@ -723,24 +787,33 @@ class BootAndLiveMigrateServer(utils.NovaScenario):
         self._delete_server(server)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image", validate_disk=False)
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.CINDER])
-@validation.add("required_platform", platform="openstack",
-                admin=True, users=True)
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor",
+    flavor_param="flavor",
+    image_param="image",
+    validate_disk=False)
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.CINDER])
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
 @scenario.configure(
     context={"cleanup@openstack": ["nova", "cinder"]},
     name="NovaServers.boot_server_from_volume_and_live_migrate",
     platform="openstack")
 class BootServerFromVolumeAndLiveMigrate(utils.NovaScenario,
                                          cinder_utils.CinderBasic):
-
-    def run(self, image, flavor, volume_size, volume_type=None,
-            block_migration=False, disk_over_commit=False, force_delete=False,
-            min_sleep=0, max_sleep=0, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            volume_size,
+            volume_type=None,
+            block_migration=False,
+            disk_over_commit=False,
+            force_delete=False,
+            min_sleep=0,
+            max_sleep=0,
+            **kwargs):
         """Boot a server from volume and then migrate it.
 
         The scenario first creates a volume and a server booted from
@@ -765,12 +838,11 @@ class BootServerFromVolumeAndLiveMigrate(utils.NovaScenario,
         :param max_sleep: Maximum sleep time in seconds (non-negative)
         :param kwargs: Optional additional arguments for server creation
         """
-        volume = self.cinder.create_volume(volume_size, imageRef=image,
-                                           volume_type=volume_type)
+        volume = self.cinder.create_volume(
+            volume_size, imageRef=image, volume_type=volume_type)
         block_device_mapping = {"vda": "%s:::1" % volume.id}
-        server = self._boot_server(None, flavor,
-                                   block_device_mapping=block_device_mapping,
-                                   **kwargs)
+        server = self._boot_server(
+            None, flavor, block_device_mapping=block_device_mapping, **kwargs)
         self.sleep_between(min_sleep, max_sleep)
 
         self._live_migrate(server, block_migration, disk_over_commit)
@@ -778,24 +850,29 @@ class BootServerFromVolumeAndLiveMigrate(utils.NovaScenario,
         self._delete_server(server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.CINDER])
-@validation.add("required_platform", platform="openstack",
-                admin=True, users=True)
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.CINDER])
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
 @scenario.configure(
     context={"cleanup@openstack": ["cinder", "nova"]},
     name="NovaServers.boot_server_attach_created_volume_and_live_migrate",
     platform="openstack")
 class BootServerAttachCreatedVolumeAndLiveMigrate(utils.NovaScenario,
                                                   cinder_utils.CinderBasic):
-
-    def run(self, image, flavor, size, block_migration=False,
-            disk_over_commit=False, boot_server_kwargs=None,
-            create_volume_kwargs=None, min_sleep=0, max_sleep=0):
+    def run(self,
+            image,
+            flavor,
+            size,
+            block_migration=False,
+            disk_over_commit=False,
+            boot_server_kwargs=None,
+            create_volume_kwargs=None,
+            min_sleep=0,
+            max_sleep=0):
         """Create a VM, attach a volume to it and live migrate.
 
         Simple test to create a VM and attach a volume, then migrate the VM,
@@ -837,18 +914,17 @@ class BootServerAttachCreatedVolumeAndLiveMigrate(utils.NovaScenario,
         self._delete_server(server)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
-@validation.add("required_platform", platform="openstack",
-                admin=True, users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_migrate_server",
-                    platform="openstack")
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_migrate_server",
+    platform="openstack")
 class BootAndMigrateServer(utils.NovaScenario):
-
     def run(self, image, flavor, **kwargs):
         """Migrate a server.
 
@@ -872,21 +948,22 @@ class BootAndMigrateServer(utils.NovaScenario):
         self._delete_server(server)
 
 
-@types.convert(from_image={"type": "glance_image"},
-               to_image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="from_image")
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="to_image")
+@types.convert(
+    from_image={"type": "glance_image"},
+    to_image={"type": "glance_image"},
+    flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="from_image")
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="to_image")
 @validation.add("required_services", services=[consts.Service.NOVA])
-@validation.add("required_platform", platform="openstack",
-                admin=True, users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_rebuild_server",
-                    platform="openstack")
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_rebuild_server",
+    platform="openstack")
 class BootAndRebuildServer(utils.NovaScenario):
-
     def run(self, from_image, to_image, flavor, **kwargs):
         """Rebuild a server.
 
@@ -903,10 +980,9 @@ class BootAndRebuildServer(utils.NovaScenario):
         self._delete_server(server)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
 @validation.add("required_contexts", contexts=("network"))
@@ -915,7 +991,6 @@ class BootAndRebuildServer(utils.NovaScenario):
     name="NovaServers.boot_and_associate_floating_ip",
     platform="openstack")
 class BootAndAssociateFloatingIp(utils.NovaScenario):
-
     def run(self, image, flavor, create_floating_ip_args=None, **kwargs):
         """Boot a server and associate a floating IP to it.
 
@@ -932,20 +1007,25 @@ class BootAndAssociateFloatingIp(utils.NovaScenario):
         self._associate_floating_ip(server, address["ip"])
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.NEUTRON])
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
+@validation.add(
+    "required_services",
+    services=[consts.Service.NOVA, consts.Service.NEUTRON])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", "neutron"]},
-                    name="NovaServers.boot_server_and_attach_interface",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", "neutron"]},
+    name="NovaServers.boot_server_and_attach_interface",
+    platform="openstack")
 class BootServerAndAttachInterface(utils.NovaScenario,
                                    neutron_utils.NeutronScenario):
-    def run(self, image, flavor, network_create_args=None,
-            subnet_create_args=None, subnet_cidr_start=None,
+    def run(self,
+            image,
+            flavor,
+            network_create_args=None,
+            subnet_create_args=None,
+            subnet_cidr_start=None,
             boot_server_args=None):
         """Create server and subnet, then attach the interface to it.
 
@@ -967,17 +1047,16 @@ class BootServerAndAttachInterface(utils.NovaScenario,
         self._attach_interface(server, net_id=network["network"]["id"])
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_show_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_show_server",
+    platform="openstack")
 class BootAndShowServer(utils.NovaScenario):
-
     def run(self, image, flavor, **kwargs):
         """Show server details.
 
@@ -993,17 +1072,16 @@ class BootAndShowServer(utils.NovaScenario):
         self._show_server(server)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_get_console_output",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_get_console_output",
+    platform="openstack")
 class BootAndGetConsoleOutput(utils.NovaScenario):
-
     def run(self, image, flavor, length=None, **kwargs):
         """Get text console output from server.
 
@@ -1021,17 +1099,16 @@ class BootAndGetConsoleOutput(utils.NovaScenario):
         self._get_server_console_output(server, length)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_update_server",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_update_server",
+    platform="openstack")
 class BootAndUpdateServer(utils.NovaScenario):
-
     def run(self, image, flavor, description=None, **kwargs):
         """Boot a server, then update its name and description.
 
@@ -1047,21 +1124,25 @@ class BootAndUpdateServer(utils.NovaScenario):
         self._update_server(server, description)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
-@validation.add("required_services", services=[consts.Service.NOVA,
-                                               consts.Service.CINDER])
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
+@validation.add(
+    "required_services", services=[consts.Service.NOVA, consts.Service.CINDER])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", "cinder"]},
-                    name="NovaServers.boot_server_from_volume_snapshot",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", "cinder"]},
+    name="NovaServers.boot_server_from_volume_snapshot",
+    platform="openstack")
 class BootServerFromVolumeSnapshot(utils.NovaScenario,
                                    cinder_utils.CinderBasic):
-
-    def run(self, image, flavor, volume_size, volume_type=None,
-            auto_assign_nic=False, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            volume_size,
+            volume_type=None,
+            auto_assign_nic=False,
+            **kwargs):
         """Boot a server from a snapshot.
 
         The scenario first creates a volume and creates a
@@ -1077,19 +1158,21 @@ class BootServerFromVolumeSnapshot(utils.NovaScenario,
         :param auto_assign_nic: True if NICs should be assigned
         :param kwargs: Optional additional arguments for server creation
         """
-        volume = self.cinder.create_volume(volume_size, imageRef=image,
-                                           volume_type=volume_type)
+        volume = self.cinder.create_volume(
+            volume_size, imageRef=image, volume_type=volume_type)
         snapshot = self.cinder.create_snapshot(volume.id, force=False)
         block_device_mapping = {"vda": "%s:snap::1" % snapshot.id}
-        self._boot_server(None, flavor, auto_assign_nic=auto_assign_nic,
-                          block_device_mapping=block_device_mapping,
-                          **kwargs)
+        self._boot_server(
+            None,
+            flavor,
+            auto_assign_nic=auto_assign_nic,
+            block_device_mapping=block_device_mapping,
+            **kwargs)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
 @validation.add("required_contexts", contexts=("network"))
@@ -1098,7 +1181,6 @@ class BootServerFromVolumeSnapshot(utils.NovaScenario,
     name="NovaServers.boot_server_associate_and_dissociate_floating_ip",
     platform="openstack")
 class BootServerAssociateAndDissociateFloatingIP(utils.NovaScenario):
-
     def run(self, image, flavor, create_floating_ip_args=None, **kwargs):
         """Boot a server associate and dissociate a floating IP from it.
 
@@ -1121,18 +1203,17 @@ class BootServerAssociateAndDissociateFloatingIP(utils.NovaScenario):
         self._dissociate_floating_ip(server, address["ip"])
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
 @validation.add("required_contexts", contexts=("network"))
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_server_and_list_interfaces",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_server_and_list_interfaces",
+    platform="openstack")
 class BootServerAndListInterfaces(utils.NovaScenario):
-
     def run(self, image, flavor, **kwargs):
         """Boot a server and list interfaces attached to it.
 
@@ -1147,19 +1228,19 @@ class BootServerAndListInterfaces(utils.NovaScenario):
 
 
 @validation.add(
-    "enum", param_name="console_type",
+    "enum",
+    param_name="console_type",
     values=["novnc", "xvpvnc", "spice-html5", "rdp-html5", "serial", "webmks"])
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image")
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor", flavor_param="flavor", image_param="image")
 @validation.add("required_services", services=[consts.Service.NOVA])
 @validation.add("required_platform", platform="openstack", users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova"]},
-                    name="NovaServers.boot_and_get_console_url",
-                    platform="openstack")
+@scenario.configure(
+    context={"cleanup@openstack": ["nova"]},
+    name="NovaServers.boot_and_get_console_url",
+    platform="openstack")
 class BootAndGetConsoleUrl(utils.NovaScenario):
-
     def run(self, image, flavor, console_type, **kwargs):
         """Retrieve a console url of a server.
 
@@ -1176,19 +1257,25 @@ class BootAndGetConsoleUrl(utils.NovaScenario):
         server = self._boot_server(image, flavor, **kwargs)
         self._get_console_url_server(server, console_type)
 
+
 # NOTE(jethro): mod
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image", validate_disk=False)
-@validation.add("required_services", services=([consts.Service.NOVA,
-                                                consts.Service.CINDER]))
-@validation.add("required_platform", platform="openstack", admin=True,
-                users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", 'cinder']},
-                    name="NovaServers.stitched_complex_workload",
-                    platform="openstack")
+
+@types.convert(image={"type": "glance_image"}, flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor",
+    flavor_param="flavor",
+    image_param="image",
+    validate_disk=False)
+@validation.add(
+    "required_services",
+    services=([consts.Service.NOVA, consts.Service.CINDER]))
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", 'cinder']},
+    name="NovaServers.stitched_complex_workload",
+    platform="openstack")
 class StitchedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
     """Complex workload for benchmarking Pythia framework.
 
@@ -1199,9 +1286,18 @@ class StitchedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
 
     """
 
-    def run(self, image, flavor, volume_size, volume_type=None, count=5,
-            min_sleep=0, max_sleep=0, detailed=True, force_delete=False,
-            actions=None, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            volume_size,
+            volume_type=None,
+            count=5,
+            min_sleep=0,
+            max_sleep=0,
+            detailed=True,
+            force_delete=False,
+            actions=None,
+            **kwargs):
         """Boot a server from volume and then delete it.
 
         task 1: BootAndDeleteMultipleServers
@@ -1211,19 +1307,18 @@ class StitchedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
         """
 
         # task 1
-        servers = self._boot_servers(image, flavor, 1, instances_amount=count,
-                                     **kwargs)
+        servers = self._boot_servers(
+            image, flavor, 1, instances_amount=count, **kwargs)
         self.sleep_between(min_sleep, max_sleep)
         self._list_servers(detailed)
         self._delete_servers(servers, force=force_delete)
 
         # task 2
-        volume_two = self.cinder.create_volume(volume_size, imageRef=image,
-                                               volume_type=volume_type)
+        volume_two = self.cinder.create_volume(
+            volume_size, imageRef=image, volume_type=volume_type)
         block_device_mapping = {"vda": "%s:::1" % volume_two.id}
-        server_two = self._boot_server(None, flavor,
-                                       block_device_mapping=block_device_mapping,
-                                       **kwargs)
+        server_two = self._boot_server(
+            None, flavor, block_device_mapping=block_device_mapping, **kwargs)
         self.sleep_between(min_sleep, max_sleep)
         self._list_servers(detailed)
         self._delete_server(server_two, force=force_delete)
@@ -1236,26 +1331,36 @@ class StitchedComplexWorkload(utils.NovaScenario, cinder_utils.CinderBasic):
         except jsonschema.exceptions.ValidationError as error:
             raise rally_exceptions.InvalidConfigException(
                 "Invalid server actions configuration \'%(actions)s\' due to: "
-                "%(error)s" % {"actions": str(actions), "error": str(error)})
+                "%(error)s" % {
+                    "actions": str(actions),
+                    "error": str(error)
+                })
         server_three = self._boot_server(image, flavor, **kwargs)
         for action in action_builder.build_actions(actions, server_three):
             action()
         self._delete_server(server_three, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"},
-               to_flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image", validate_disk=False)
-@validation.add("required_services", services=([consts.Service.NOVA,
-                                                consts.Service.GLANCE,
-                                                consts.Service.CINDER]))
-@validation.add("required_platform", platform="openstack", admin=True,
-                users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", 'cinder', 'glance']},
-                    name="NovaServers.mixed_complex_workload_one",
-                    platform="openstack")
+@types.convert(
+    image={"type": "glance_image"},
+    flavor={"type": "nova_flavor"},
+    to_flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor",
+    flavor_param="flavor",
+    image_param="image",
+    validate_disk=False)
+@validation.add(
+    "required_services",
+    services=([
+        consts.Service.NOVA, consts.Service.GLANCE, consts.Service.CINDER
+    ]))
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", 'cinder', 'glance']},
+    name="NovaServers.mixed_complex_workload_one",
+    platform="openstack")
 class MixedComplexWorkloadOne(utils.NovaScenario, cinder_utils.CinderBasic):
     """Mixed complex workload for benchmarking Pythia framework.
 
@@ -1270,10 +1375,21 @@ class MixedComplexWorkloadOne(utils.NovaScenario, cinder_utils.CinderBasic):
     6. boot another vm from the image
     """
 
-    def run(self, image, flavor, to_flavor, volume_size, volume_type=None,
-            count=2, confirm=True, do_delete=True, min_sleep=0, max_sleep=0,
-            detailed=True, 
-            force_delete=False, actions=None, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            to_flavor,
+            volume_size,
+            volume_type=None,
+            count=2,
+            confirm=True,
+            do_delete=True,
+            min_sleep=0,
+            max_sleep=0,
+            detailed=True,
+            force_delete=False,
+            actions=None,
+            **kwargs):
         """Boot a server from volume and then delete it.
 
         task 1: BootAndDeleteMultipleServers
@@ -1306,7 +1422,10 @@ class MixedComplexWorkloadOne(utils.NovaScenario, cinder_utils.CinderBasic):
             except jsonschema.exceptions.ValidationError as error:
                 raise rally_exceptions.InvalidConfigException(
                     "Invalid server actions configuration \'%(actions)s\' due to: "
-                    "%(error)s" % {"actions": str(actions), "error": str(error)})
+                    "%(error)s" % {
+                        "actions": str(actions),
+                        "error": str(error)
+                    })
             # exec operations against the server desired
             for action in action_builder.build_actions(actions, server):
                 action()
@@ -1343,19 +1462,26 @@ class MixedComplexWorkloadOne(utils.NovaScenario, cinder_utils.CinderBasic):
         #    self._delete_server(snapshot_server, force=force_delete)
 
 
-@types.convert(image={"type": "glance_image"},
-               flavor={"type": "nova_flavor"},
-               to_flavor={"type": "nova_flavor"})
-@validation.add("image_valid_on_flavor", flavor_param="flavor",
-                image_param="image", validate_disk=False)
-@validation.add("required_services", services=([consts.Service.NOVA,
-                                                consts.Service.GLANCE,
-                                                consts.Service.CINDER]))
-@validation.add("required_platform", platform="openstack", admin=True,
-                users=True)
-@scenario.configure(context={"cleanup@openstack": ["nova", 'cinder', 'glance']},
-                    name="NovaServers.mixed_complex_workload_cur",
-                    platform="openstack")
+@types.convert(
+    image={"type": "glance_image"},
+    flavor={"type": "nova_flavor"},
+    to_flavor={"type": "nova_flavor"})
+@validation.add(
+    "image_valid_on_flavor",
+    flavor_param="flavor",
+    image_param="image",
+    validate_disk=False)
+@validation.add(
+    "required_services",
+    services=([
+        consts.Service.NOVA, consts.Service.GLANCE, consts.Service.CINDER
+    ]))
+@validation.add(
+    "required_platform", platform="openstack", admin=True, users=True)
+@scenario.configure(
+    context={"cleanup@openstack": ["nova", 'cinder', 'glance']},
+    name="NovaServers.mixed_complex_workload_cur",
+    platform="openstack")
 class MixedComplexWorkloadCur(utils.NovaScenario, cinder_utils.CinderBasic):
     """Mixed complex workload for benchmarking Pythia framework.
 
@@ -1370,9 +1496,21 @@ class MixedComplexWorkloadCur(utils.NovaScenario, cinder_utils.CinderBasic):
     5. snapshotting the vm into a image
     """
 
-    def run(self, image, flavor, to_flavor, volume_size, volume_type=None,
-            count=2, confirm=True, do_delete=True, min_sleep=0, max_sleep=0,
-            detailed=True, force_delete=False, actions=None, **kwargs):
+    def run(self,
+            image,
+            flavor,
+            to_flavor,
+            volume_size,
+            volume_type=None,
+            count=2,
+            confirm=True,
+            do_delete=True,
+            min_sleep=0,
+            max_sleep=0,
+            detailed=True,
+            force_delete=False,
+            actions=None,
+            **kwargs):
         """Executing sets of operations against the Openstack environment.
         """
         self._list_servers(detailed)
@@ -1394,20 +1532,23 @@ class MixedComplexWorkloadCur(utils.NovaScenario, cinder_utils.CinderBasic):
             except jsonschema.exceptions.ValidationError as error:
                 raise rally_exceptions.InvalidConfigException(
                     "Invalid server actions configuration \'%(actions)s\' due to: "
-                    "%(error)s" % {"actions": str(actions), "error": str(error)})
+                    "%(error)s" % {
+                        "actions": str(actions),
+                        "error": str(error)
+                    })
             # exec operations against the server desired
             for action in action_builder.build_actions(actions, server):
                 action()
 
             # Try to resize it
             self.sleep_between(min_sleep, max_sleep)
-            self._resize(server, to_flavor)
+            #self._resize(server, to_flavor)
             # by default we confirm
-            confirm = kwargs.get("confirm", True)
-            if confirm:
-                self._resize_confirm(server)
-            else:
-                self._resize_revert(server)
+            #confirm = kwargs.get("confirm", True)
+            #if confirm:
+            #    self._resize_confirm(server)
+            #else:
+            #    self._resize_revert(server)
 
             # re-run the operations
             for action in action_builder.build_actions(actions, server):
